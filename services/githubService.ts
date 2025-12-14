@@ -3,17 +3,36 @@ import { GitHubRepo, GitHubUser } from '../types';
 const BASE_URL = 'https://api.github.com';
 const USERNAME = 'pro-grammer-SD';
 
+export class RateLimitError extends Error {
+  resetTime: number;
+  constructor(message: string, resetTime: number) {
+    super(message);
+    this.name = 'RateLimitError';
+    this.resetTime = resetTime;
+  }
+}
+
+const handleResponse = async (response: Response) => {
+  if (!response.ok) {
+    if (response.status === 403 || response.status === 429) {
+      const resetHeader = response.headers.get('x-ratelimit-reset');
+      // If header is missing, default to 1 hour from now to be safe and still show the cool UI
+      const resetTime = resetHeader ? parseInt(resetHeader, 10) : Math.floor(Date.now() / 1000) + 3600;
+      throw new RateLimitError('API Rate Limit Exceeded', resetTime);
+    }
+    throw new Error(`GitHub API Error: ${response.statusText}`);
+  }
+  return response.json();
+};
+
 export const fetchProfile = async (): Promise<GitHubUser> => {
   const response = await fetch(`${BASE_URL}/users/${USERNAME}`);
-  if (!response.ok) throw new Error('Failed to fetch user profile');
-  return response.json();
+  return handleResponse(response);
 };
 
 export const fetchRepos = async (): Promise<GitHubRepo[]> => {
   const response = await fetch(`${BASE_URL}/users/${USERNAME}/repos?sort=updated&per_page=100`);
-  if (!response.ok) throw new Error('Failed to fetch repositories');
-  const repos = await response.json();
-  return repos;
+  return handleResponse(response);
 };
 
 // Fetch pinned repositories with fallback to Official GitHub API (Top Starred)
@@ -46,43 +65,34 @@ export const fetchPinnedRepos = async (): Promise<GitHubRepo[]> => {
         console.warn("Proxy failed, falling back to GitHub API sorting", e);
     }
 
-    // Strategy 2: Fallback to Official GitHub API (Top Starred) if proxy fails or returns empty
-    try {
-        // Fetch top 6 repos sorted by stars
-        const response = await fetch(`${BASE_URL}/users/${USERNAME}/repos?sort=stargazers_count&direction=desc&per_page=6`);
-        if (!response.ok) throw new Error('Failed to fetch fallback repos');
-        const fallbackRepos = await response.json();
-        return fallbackRepos;
-    } catch (e) {
-        console.warn("Fallback fetch failed", e);
-        return [];
-    }
+    // Strategy 2: Fallback to Official GitHub API (Top Starred)
+    const response = await fetch(`${BASE_URL}/users/${USERNAME}/repos?sort=stargazers_count&direction=desc&per_page=6`);
+    return handleResponse(response);
 };
 
 export const fetchFollowers = async (): Promise<GitHubUser[]> => {
     // Fetch first 12 followers
     const response = await fetch(`${BASE_URL}/users/${USERNAME}/followers?per_page=12`);
-    if (!response.ok) throw new Error('Failed to fetch followers');
-    const simpleUsers = await response.json();
+    const simpleUsers = await handleResponse(response);
 
-    // The followers endpoint doesn't return bio/name, so we fetch details for these users
-    // We limit to 12 to be kind to the rate limit
-    const detailedUsers = await Promise.all(
-        simpleUsers.map(async (u: any) => {
-            try {
-                const r = await fetch(u.url);
-                if (r.ok) return await r.json();
-                return u;
-            } catch (e) {
-                return u;
-            }
-        })
-    );
-    return detailedUsers;
+    // OPTIMIZATION: Do NOT fetch detailed user info for each follower to save 12 API calls.
+    // Map simple user data to GitHubUser interface with safe defaults.
+    return simpleUsers.map((u: any) => ({
+        id: u.id,
+        login: u.login,
+        avatar_url: u.avatar_url,
+        html_url: u.html_url,
+        name: u.login, // Simple endpoint doesn't provide name
+        bio: "Coffee Club Member", // Simple endpoint doesn't provide bio
+        public_repos: 0,
+        followers: 0,
+        following: 0,
+        created_at: new Date().toISOString()
+    }));
 };
 
 export const fetchReadme = async (repoName: string, branch: string = 'main'): Promise<string | null> => {
-  const branches = [branch, 'master'];
+  const branches = [branch, 'master', 'main'];
   
   for (const b of branches) {
     const url = `https://raw.githubusercontent.com/${USERNAME}/${repoName}/${b}/README.md`;

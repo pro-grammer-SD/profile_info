@@ -37,20 +37,20 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos }) => {
   ];
 
   return (
-    <section id="repos" className="py-16 bg-white dark:bg-coffee-950 rounded-t-[3rem] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] min-h-screen relative z-10 transition-colors duration-500">
+    <section id="repos" className="py-12 sm:py-16 bg-white dark:bg-coffee-950 rounded-t-[2rem] sm:rounded-t-[3rem] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] min-h-screen relative z-10 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-            <div>
-                <h2 className="text-4xl font-display font-bold text-coffee-900 dark:text-coffee-100 flex items-center gap-3">
-                    <span className="bg-coffee-100 dark:bg-coffee-800 p-2 rounded-xl text-3xl shadow-sm">📦</span>
+        <div className="flex flex-col md:flex-row justify-between items-end mb-10 sm:mb-12 gap-6">
+            <div className="w-full md:w-auto">
+                <h2 className="text-3xl sm:text-4xl font-display font-bold text-coffee-900 dark:text-coffee-100 flex items-center gap-3">
+                    <span className="bg-coffee-100 dark:bg-coffee-800 p-2 rounded-xl text-2xl sm:text-3xl shadow-sm">📦</span>
                     The Code Pantry
                 </h2>
-                <p className="mt-2 text-coffee-600 dark:text-coffee-400">Freshly brewed open source contributions.</p>
+                <p className="mt-2 text-coffee-600 dark:text-coffee-400 text-sm sm:text-base">Freshly brewed open source contributions.</p>
             </div>
 
             {/* Controls */}
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-stretch sm:items-center">
                 
                 {/* Search */}
                 <div className="relative group w-full sm:w-auto">
@@ -62,7 +62,7 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos }) => {
                         placeholder="Search projects..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 w-full sm:w-64 border border-coffee-200 dark:border-coffee-700 rounded-xl focus:ring-2 focus:ring-coffee-400 focus:border-coffee-400 outline-none transition-all bg-coffee-50 dark:bg-coffee-900 placeholder-coffee-300 dark:placeholder-coffee-600 text-coffee-800 dark:text-coffee-200 shadow-inner"
+                        className="pl-10 pr-4 py-2.5 w-full sm:w-64 border border-coffee-200 dark:border-coffee-700 rounded-xl focus:ring-2 focus:ring-coffee-400 focus:border-coffee-400 outline-none transition-all bg-coffee-50 dark:bg-coffee-900 placeholder-coffee-300 dark:placeholder-coffee-600 text-coffee-800 dark:text-coffee-200 shadow-inner"
                     />
                 </div>
 
@@ -70,7 +70,7 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos }) => {
                 <div className="relative w-full sm:w-auto">
                     <button 
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className="flex items-center justify-between w-full sm:w-48 px-4 py-2 bg-coffee-50 dark:bg-coffee-900 border border-coffee-200 dark:border-coffee-700 rounded-xl text-coffee-800 dark:text-coffee-200 focus:outline-none hover:bg-coffee-100 dark:hover:bg-coffee-800 transition-colors"
+                        className="flex items-center justify-between w-full sm:w-48 px-4 py-2.5 bg-coffee-50 dark:bg-coffee-900 border border-coffee-200 dark:border-coffee-700 rounded-xl text-coffee-800 dark:text-coffee-200 focus:outline-none hover:bg-coffee-100 dark:hover:bg-coffee-800 transition-colors"
                     >
                         <div className="flex items-center gap-2">
                             <Filter size={18} className="text-coffee-400" />
@@ -112,11 +112,11 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos }) => {
 
         {/* Signature Blends (Pinned) */}
         {filteredPinned.length > 0 && (
-            <div className="mb-16">
-                <h3 className="text-2xl font-display font-bold text-coffee-800 dark:text-coffee-200 mb-6 flex items-center gap-2">
+            <div className="mb-12 sm:mb-16">
+                <h3 className="text-xl sm:text-2xl font-display font-bold text-coffee-800 dark:text-coffee-200 mb-4 sm:mb-6 flex items-center gap-2">
                     <Star className="fill-coffee-500 text-coffee-500" /> Signature Blends
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                     {filteredPinned.map(repo => (
                         <RepoCard key={`pin-${repo.name}`} repo={repo} isPinned={true} />
                     ))}
@@ -126,8 +126,8 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos }) => {
 
         {/* Other Repos */}
         {filteredOthers.length > 0 && (
-            <div className="mb-16">
-                 <h3 className="text-xl font-display font-bold text-coffee-700 dark:text-coffee-300 mb-6 flex items-center gap-2">
+            <div className="mb-12 sm:mb-16">
+                 <h3 className="text-lg sm:text-xl font-display font-bold text-coffee-700 dark:text-coffee-300 mb-4 sm:mb-6 flex items-center gap-2">
                     <FlaskConical className="text-coffee-400" /> Experimental Batches
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -152,13 +152,13 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos }) => {
         )}
 
         {/* Brewing Soon Section */}
-        <div className="mt-20 border-t-2 border-dashed border-coffee-200 dark:border-coffee-800 pt-16">
-             <div className="text-center mb-10">
-                <h2 className="text-3xl font-display font-bold text-coffee-800 dark:text-coffee-100 inline-flex items-center gap-3">
+        <div className="mt-16 sm:mt-20 border-t-2 border-dashed border-coffee-200 dark:border-coffee-800 pt-12 sm:pt-16">
+             <div className="text-center mb-8 sm:mb-10">
+                <h2 className="text-2xl sm:text-3xl font-display font-bold text-coffee-800 dark:text-coffee-100 inline-flex items-center gap-3">
                     <Clock className="text-coffee-500 animate-pulse" size={32} />
                     Brewing Soon
                 </h2>
-                <p className="text-coffee-500 dark:text-coffee-400 mt-2">Experimental roasts currently in development.</p>
+                <p className="text-coffee-500 dark:text-coffee-400 mt-2 text-sm sm:text-base">Experimental roasts currently in development.</p>
              </div>
              
              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">

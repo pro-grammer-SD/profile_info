@@ -9,15 +9,15 @@ interface FollowersListProps {
 
 const FollowersList: React.FC<FollowersListProps> = ({ followers }) => {
   return (
-    <section id="followers" className="py-16 bg-white dark:bg-coffee-950 rounded-t-[3rem] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] min-h-screen relative z-10 transition-colors duration-500">
+    <section id="followers" className="py-12 sm:py-16 bg-white dark:bg-coffee-950 rounded-t-[2rem] sm:rounded-t-[3rem] shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] min-h-screen relative z-10 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="mb-12">
-            <h2 className="text-4xl font-display font-bold text-coffee-900 dark:text-coffee-100 flex items-center gap-3">
-                <span className="bg-coffee-100 dark:bg-coffee-800 p-2 rounded-xl text-3xl shadow-sm">☕</span>
+        <div className="mb-8 sm:mb-12">
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-coffee-900 dark:text-coffee-100 flex items-center gap-3">
+                <span className="bg-coffee-100 dark:bg-coffee-800 p-2 rounded-xl text-2xl sm:text-3xl shadow-sm">☕</span>
                 Coffee Club
             </h2>
-            <p className="mt-2 text-coffee-600 dark:text-coffee-400">Regulars and connoisseurs who enjoy the brew.</p>
+            <p className="mt-2 text-coffee-600 dark:text-coffee-400 text-sm sm:text-base">Regulars and connoisseurs who enjoy the brew.</p>
         </div>
 
         {followers.length > 0 ? (
