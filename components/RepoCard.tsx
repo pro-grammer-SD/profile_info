@@ -15,6 +15,7 @@ interface RepoCardProps {
 const RepoCard: React.FC<RepoCardProps> = ({ repo, isPinned = false }) => {
   const [expanded, setExpanded] = useState(false);
   const [readme, setReadme] = useState<string | null>(null);
+  const [readmeBranch, setReadmeBranch] = useState<string>('main');
   const [loadingReadme, setLoadingReadme] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -37,8 +38,13 @@ const RepoCard: React.FC<RepoCardProps> = ({ repo, isPinned = false }) => {
   const toggleExpand = async () => {
     if (!expanded && !readme) {
       setLoadingReadme(true);
-      const content = await fetchReadme(repo.name, repo.default_branch);
-      setReadme(content || 'No README found for this repository.');
+      const result = await fetchReadme(repo.name, repo.default_branch);
+      if (result) {
+          setReadme(result.content);
+          setReadmeBranch(result.branch);
+      } else {
+          setReadme('No README found for this repository.');
+      }
       setLoadingReadme(false);
     }
     setExpanded(!expanded);
@@ -49,6 +55,12 @@ const RepoCard: React.FC<RepoCardProps> = ({ repo, isPinned = false }) => {
     navigator.clipboard.writeText(`git clone ${repo.clone_url}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const transformImageUri = (uri: string) => {
+      if (uri.startsWith('http') || uri.startsWith('//')) return uri;
+      const cleanPath = uri.replace(/^\.?\//, '');
+      return `https://raw.githubusercontent.com/${repo.full_name}/${readmeBranch}/${cleanPath}`;
   };
 
   const pinnedStyle = isPinned 
@@ -208,7 +220,13 @@ const RepoCard: React.FC<RepoCardProps> = ({ repo, isPinned = false }) => {
                     </div>
                 ) : (
                     <div className="prose prose-sm prose-stone dark:prose-invert max-w-none prose-headings:font-display prose-headings:text-coffee-800 dark:prose-headings:text-coffee-100 prose-a:text-coffee-600 dark:prose-a:text-coffee-300 prose-a:underline prose-code:text-coffee-800 dark:prose-code:text-coffee-200 prose-code:bg-coffee-50 dark:prose-code:bg-coffee-900 prose-code:px-1 prose-code:rounded prose-pre:bg-coffee-900 dark:prose-pre:bg-black prose-pre:text-coffee-50 prose-img:rounded-lg prose-img:shadow-md">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{readme || ''}</ReactMarkdown>
+                        <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]} 
+                            rehypePlugins={[rehypeRaw]}
+                            urlTransform={transformImageUri}
+                        >
+                            {readme || ''}
+                        </ReactMarkdown>
                     </div>
                 )}
             </div>

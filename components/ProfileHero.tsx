@@ -14,17 +14,18 @@ interface ProfileHeroProps {
 
 const ProfileHero: React.FC<ProfileHeroProps> = ({ user, setView }) => {
   const [profileReadme, setProfileReadme] = useState<string | null>(null);
+  const [readmeBranch, setReadmeBranch] = useState<string>('main');
   const [isReadmeExpanded, setIsReadmeExpanded] = useState(false);
   const controls = useAnimation();
   const [easterEggActive, setEasterEggActive] = useState(false);
 
   useEffect(() => {
     const loadProfileReadme = async () => {
-      const content = await fetchReadme(user.login, 'main');
-      if (content) setProfileReadme(content);
-      else {
-           const contentMaster = await fetchReadme(user.login, 'master');
-           setProfileReadme(contentMaster);
+      // For profile readme, the repo name is the same as username
+      const result = await fetchReadme(user.login, 'main');
+      if (result) {
+        setProfileReadme(result.content);
+        setReadmeBranch(result.branch);
       }
     };
     loadProfileReadme();
@@ -43,6 +44,13 @@ const ProfileHero: React.FC<ProfileHeroProps> = ({ user, setView }) => {
     setEasterEggActive(false);
   };
 
+  // Transform relative image paths to absolute raw.githubusercontent.com paths
+  const transformImageUri = (uri: string) => {
+    if (uri.startsWith('http') || uri.startsWith('//')) return uri;
+    const cleanPath = uri.replace(/^\.?\//, '');
+    return `https://raw.githubusercontent.com/${user.login}/${user.login}/${readmeBranch}/${cleanPath}`;
+  };
+
   return (
     <section id="hero" className="relative pt-24 pb-12 sm:pt-32 sm:pb-20 overflow-hidden">
       {/* Background decorations */}
@@ -53,11 +61,12 @@ const ProfileHero: React.FC<ProfileHeroProps> = ({ user, setView }) => {
         <div className="flex flex-col md:flex-row items-start gap-8 md:gap-12">
             
             {/* Left: Avatar & Stats */}
+            {/* Changed from 'sticky top-24' to 'md:sticky md:top-24' to fix mobile view overlapping */}
             <motion.div 
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.7 }}
-                className="flex-shrink-0 text-center md:text-left sticky top-24 w-full md:w-auto flex flex-col items-center md:items-start"
+                className="flex-shrink-0 text-center md:text-left md:sticky md:top-24 w-full md:w-auto flex flex-col items-center md:items-start"
             >
                 {/* 3D Aesthetic Avatar Container */}
                 <div className="relative group perspective-1000">
@@ -133,7 +142,13 @@ const ProfileHero: React.FC<ProfileHeroProps> = ({ user, setView }) => {
                                 transition={{ duration: 0.5, ease: "easeInOut" }}
                                 className={`overflow-hidden prose prose-stone dark:prose-invert prose-sm sm:prose-base max-w-none prose-headings:font-display prose-headings:text-coffee-800 dark:prose-headings:text-coffee-100 prose-a:text-coffee-600 dark:prose-a:text-coffee-300 prose-strong:text-coffee-700 dark:prose-strong:text-coffee-200 ${!isReadmeExpanded ? 'mask-gradient-bottom' : ''}`}
                             >
-                                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>{profileReadme}</ReactMarkdown>
+                                <ReactMarkdown 
+                                    remarkPlugins={[remarkGfm]} 
+                                    rehypePlugins={[rehypeRaw]}
+                                    urlTransform={transformImageUri}
+                                >
+                                    {profileReadme}
+                                </ReactMarkdown>
                             </motion.div>
                             
                             {/* Gradient Mask for collapsed state */}

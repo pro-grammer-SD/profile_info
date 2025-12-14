@@ -179,13 +179,20 @@ export const getPortfolioData = async (forceRefresh = false): Promise<PortfolioD
 // --- Helper Methods ---
 
 // Uses raw.githubusercontent.com - Does not consume API Rate Limit
-export const fetchReadme = async (repoName: string, branch: string = 'main'): Promise<string | null> => {
-  const branches = [branch, 'master', 'main'];
+export const fetchReadme = async (repoName: string, initialBranch: string = 'main'): Promise<{ content: string; branch: string } | null> => {
+  // Deduplicate branches while keeping preference order
+  const branches = Array.from(new Set([initialBranch, 'master', 'main'])); 
+  
   for (const b of branches) {
     const url = `https://raw.githubusercontent.com/${CONFIG.USERNAME}/${repoName}/${b}/README.md`;
     try {
       const response = await fetch(url);
-      if (response.ok) return await response.text();
+      if (response.ok) {
+          return {
+              content: await response.text(),
+              branch: b
+          };
+      }
     } catch (e) { continue; }
   }
   return null;
