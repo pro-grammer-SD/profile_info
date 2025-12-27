@@ -4,6 +4,7 @@ import { GitHubRepo, GitHubUser, CoffeeStats } from '../types';
 const CONFIG = {
   USERNAME: 'pro-grammer-SD',
   API_BASE: 'https://api.github.com',
+  GRAPHQL_API: 'https://api.github.com/graphql',
   CACHE_KEY: 'gh_portfolio_v4',
   CACHE_TTL: 60 * 60 * 1000,
 };
@@ -47,7 +48,6 @@ const handleResponse = async (response: Response) => {
   if (!response.ok) {
     if (response.status === 403 || response.status === 429) {
       const resetHeader = response.headers.get('x-ratelimit-reset');
-      // Use the reset timestamp from headers or default to 1 hour from now
       const resetTime = resetHeader ? parseInt(resetHeader, 10) : Math.floor(Date.now() / 1000) + 3600;
       throw new RateLimitError('API Rate Limit Exceeded', resetTime);
     }
@@ -56,9 +56,70 @@ const handleResponse = async (response: Response) => {
   return response.json();
 };
 
+const fetchPinnedReposGraphQL = async (authHeader: Record<string, string>): Promise<GitHubRepo[]> => {
+  const query = `
+    query {
+      user(login: "${CONFIG.USERNAME}") {
+        pinnedItems(first: 6, types: [REPOSITORY]) {
+          nodes {
+            ... on Repository {
+              name
+              description
+              url
+              stargazerCount
+              forkCount
+              primaryLanguage { name }
+              openGraphImageUrl
+              defaultBranchRef { name }
+              repositoryTopics(first: 5) {
+                nodes { topic { name } }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    const response = await fetch(CONFIG.GRAPHQL_API, {
+      method: 'POST',
+      headers: {
+        ...authHeader,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    });
+
+    const result = await handleResponse(response);
+    if (!result || !result.data || !result.data.user) return [];
+
+    return result.data.user.pinnedItems.nodes.map((node: any) => ({
+      id: Math.random(), // GraphQL doesn't give a simple numeric ID easily in this query
+      name: node.name,
+      full_name: `${CONFIG.USERNAME}/${node.name}`,
+      html_url: node.url,
+      description: node.description,
+      language: node.primaryLanguage?.name || null,
+      stargazers_count: node.stargazerCount,
+      forks_count: node.forkCount,
+      updated_at: new Date().toISOString(),
+      topics: node.repositoryTopics.nodes.map((n: any) => n.topic.name),
+      clone_url: `${node.url}.git`,
+      default_branch: node.defaultBranchRef?.name || 'main',
+      repoImage: node.openGraphImageUrl
+    }));
+  } catch (e) {
+    console.error('GraphQL Fetch Error:', e);
+    return [];
+  }
+};
+
 const fetchTags = async (repoName: string): Promise<string | null> => {
   try {
-    const response = await fetch(`${CONFIG.API_BASE}/repos/${CONFIG.USERNAME}/${repoName}/tags?per_page=1`);
+    const response = await fetch(`${CONFIG.API_BASE}/repos/${CONFIG.USERNAME}/${repoName}/tags?per_page=1`, {
+      headers: process.env.API_KEY ? { 'Authorization': `token ${process.env.API_KEY}` } : {}
+    });
     const tags = await handleResponse(response);
     return tags?.[0]?.name || null;
   } catch { return null; }
@@ -66,8 +127,10 @@ const fetchTags = async (repoName: string): Promise<string | null> => {
 
 export const fetchRepoParticipation = async (repoName: string): Promise<{ all: number[]; owner: number[] } | null> => {
   try {
-    const response = await fetch(`${CONFIG.API_BASE}/repos/${CONFIG.USERNAME}/${repoName}/stats/participation`);
-    if (response.status === 202) return null; // GitHub is calculating stats
+    const response = await fetch(`${CONFIG.API_BASE}/repos/${CONFIG.USERNAME}/${repoName}/stats/participation`, {
+      headers: process.env.API_KEY ? { 'Authorization': `token ${process.env.API_KEY}` } : {}
+    });
+    if (response.status === 202) return null; 
     if (!response.ok) return null;
     return await response.json();
   } catch {
@@ -104,10 +167,14 @@ export const getPortfolioData = async (forceRefresh = false): Promise<PortfolioD
     if (cached) return cached;
   }
 
-  const [userData, reposData, followersData] = await Promise.all([
-    fetch(`${CONFIG.API_BASE}/users/${CONFIG.USERNAME}`).then(handleResponse),
-    fetch(`${CONFIG.API_BASE}/users/${CONFIG.USERNAME}/repos?sort=updated&per_page=100`).then(handleResponse),
-    fetch(`${CONFIG.API_BASE}/users/${CONFIG.USERNAME}/followers?per_page=100`).then(handleResponse)
+  const authHeader = process.env.API_KEY ? { 'Authorization': `token ${process.env.API_KEY}` } : {};
+
+  // Fetch from official GitHub APIs (REST and GraphQL)
+  const [userData, reposData, followersData, pinnedRepos] = await Promise.all([
+    fetch(`${CONFIG.API_BASE}/users/${CONFIG.USERNAME}`, { headers: authHeader }).then(handleResponse),
+    fetch(`${CONFIG.API_BASE}/users/${CONFIG.USERNAME}/repos?sort=updated&per_page=100`, { headers: authHeader }).then(handleResponse),
+    fetch(`${CONFIG.API_BASE}/users/${CONFIG.USERNAME}/followers?per_page=100`, { headers: authHeader }).then(handleResponse),
+    fetchPinnedReposGraphQL(authHeader)
   ]);
 
   if (!userData) throw new Error("Could not fetch GitHub user. Check your connection or username.");
@@ -116,24 +183,19 @@ export const getPortfolioData = async (forceRefresh = false): Promise<PortfolioD
   const repos = (reposData || []) as GitHubRepo[];
   const followers = (followersData || []) as GitHubUser[];
 
-  const pinnedRepos = await fetch(`https://gh-pinned-repos.egoist.dev/?username=${CONFIG.USERNAME}`)
-      .then(r => r.ok ? r.json() : [])
-      .then(pins => Array.isArray(pins) ? pins.map((p: any, i: number) => ({
-        id: 999000 + i, name: p.repo, full_name: `${p.owner}/${p.repo}`,
-        html_url: p.link, description: p.description, language: p.language,
-        stargazers_count: parseInt(p.stars) || 0, forks_count: parseInt(p.forks) || 0,
-        updated_at: new Date().toISOString(), clone_url: `https://github.com/${p.owner}/${p.repo}.git`,
-        default_branch: 'main', topics: []
-      })) : []);
+  // Fallback for pinned if GraphQL failed for some reason
+  const finalPinned = pinnedRepos.length > 0 
+    ? pinnedRepos 
+    : [...repos].sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0)).slice(0, 6);
 
-  const reposToTag = [...pinnedRepos, ...repos.slice(0, 5)];
+  const reposToTag = [...finalPinned, ...repos.slice(0, 5)];
   const tagEntries = await Promise.all(
     reposToTag.map(async (r) => [r.name, await fetchTags(r.name)])
   );
   const tags = Object.fromEntries(tagEntries.filter(e => e[1]));
   const stats = calculateStats(user, repos);
 
-  const data = { user, repos, pinnedRepos, followers, tags, stats };
+  const data = { user, repos, pinnedRepos: finalPinned, followers, tags, stats };
   setCache(data);
   return { ...data, timestamp: Date.now() };
 };

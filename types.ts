@@ -25,6 +25,7 @@ export interface GitHubRepo {
   topics: string[];
   clone_url: string;
   default_branch: string;
+  repoImage?: string; // Social preview from pinned API
 }
 
 export interface CoffeeStats {

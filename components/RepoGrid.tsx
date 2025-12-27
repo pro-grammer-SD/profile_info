@@ -46,40 +46,40 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos, tags }) => {
   };
 
   return (
-    <section id="repos" className="py-24 bg-white dark:bg-coffee-950 rounded-t-[5rem] shadow-[0_-20px_80px_-20px_rgba(0,0,0,0.1)] relative z-10 -mt-10">
+    <section id="repos" className="py-16 md:py-24 bg-white dark:bg-coffee-950 rounded-t-[3rem] md:rounded-t-[5rem] shadow-[0_-20px_80px_-20px_rgba(0,0,0,0.1)] relative z-10 -mt-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <div className="flex flex-col md:flex-row justify-between items-start mb-16 gap-10">
-            <div className="text-center md:text-left">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-coffee-100 dark:bg-coffee-900 text-coffee-700 dark:text-coffee-300 rounded-full text-xs font-black uppercase tracking-tighter mb-4">
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-start mb-12 md:mb-16 gap-8 md:gap-10">
+            <div className="text-center md:text-left w-full md:w-auto">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-coffee-100 dark:bg-coffee-900 text-coffee-700 dark:text-coffee-300 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-tighter mb-4">
                   <Sparkles size={14} />
                   <span>Curated Collections</span>
                 </div>
-                <h2 className="text-5xl sm:text-6xl font-display font-black text-coffee-950 dark:text-coffee-50 tracking-tight leading-none">
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-coffee-950 dark:text-coffee-50 tracking-tight leading-none">
                     The Archive
                 </h2>
-                <p className="mt-4 text-coffee-500 dark:text-coffee-400 text-lg font-serif italic">Every batch of code, roasted to perfection.</p>
+                <p className="mt-4 text-coffee-500 dark:text-coffee-400 text-base sm:text-lg font-serif italic">Every batch of code, roasted to perfection.</p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                <div className="relative w-full md:w-80 group">
-                    <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-coffee-400 group-focus-within:text-coffee-800 transition-colors" />
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full md:w-auto">
+                <div className="relative w-full md:w-64 lg:w-80 group">
+                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-coffee-400 group-focus-within:text-coffee-800 transition-colors" />
                     <input
                         type="text"
                         placeholder="Search specific roasts..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-8 py-3.5 bg-coffee-50 dark:bg-coffee-900 border-2 border-transparent focus:border-coffee-200 dark:focus:border-coffee-800 rounded-2xl outline-none transition-all dark:text-white font-medium text-sm"
+                        className="w-full pl-11 pr-4 py-3 bg-coffee-50 dark:bg-coffee-900 border-2 border-transparent focus:border-coffee-200 dark:focus:border-coffee-800 rounded-xl sm:rounded-2xl outline-none transition-all dark:text-white font-medium text-sm"
                     />
                 </div>
 
-                <div className="relative">
+                <div className="relative w-full sm:w-auto">
                     <button 
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className="w-full sm:w-48 px-6 py-3.5 bg-coffee-800 dark:bg-coffee-100 text-white dark:text-coffee-900 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-between gap-2 shadow-lg"
+                        className="w-full sm:w-44 lg:w-48 px-5 py-3 bg-coffee-800 dark:bg-coffee-100 text-white dark:text-coffee-900 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-xs uppercase tracking-widest flex items-center justify-between gap-2 shadow-lg"
                     >
-                        <span>{selectedLang}</span>
-                        <ChevronDown size={16} className={`transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
+                        <span className="truncate">{selectedLang}</span>
+                        <ChevronDown size={14} className={`transition-transform duration-300 flex-shrink-0 ${isFilterOpen ? 'rotate-180' : ''}`} />
                     </button>
                     
                     <AnimatePresence>
@@ -88,13 +88,13 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos, tags }) => {
                                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-coffee-900 border border-coffee-200 dark:border-coffee-800 rounded-2xl shadow-2xl z-50 overflow-hidden max-h-64 overflow-y-auto no-scrollbar"
+                                className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-coffee-900 border border-coffee-200 dark:border-coffee-800 rounded-xl sm:rounded-2xl shadow-2xl z-50 overflow-hidden max-h-64 overflow-y-auto no-scrollbar"
                             >
                                 {languages.map(lang => (
                                     <button
                                         key={lang}
                                         onClick={() => handleLangChange(lang)}
-                                        className="w-full text-left px-6 py-3 text-xs font-black uppercase tracking-widest hover:bg-coffee-50 dark:hover:bg-coffee-800 transition-colors text-coffee-700 dark:text-coffee-300"
+                                        className="w-full text-left px-5 py-3 text-[10px] sm:text-xs font-black uppercase tracking-widest hover:bg-coffee-50 dark:hover:bg-coffee-800 transition-colors text-coffee-700 dark:text-coffee-300"
                                     >
                                         {lang}
                                     </button>
@@ -107,12 +107,12 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos, tags }) => {
         </div>
 
         {currentPage === 1 && pinnedRepos.length > 0 && selectedLang === 'All Roasts' && searchTerm === '' && (
-          <div className="mb-20">
-            <div className="flex items-center gap-4 mb-10">
-              <h3 className="text-sm font-black uppercase tracking-[0.4em] text-coffee-400">Signature Series</h3>
+          <div className="mb-16 md:mb-20">
+            <div className="flex items-center gap-4 mb-8 md:mb-10">
+              <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] text-coffee-400 whitespace-nowrap">Signature Series</h3>
               <div className="h-px flex-1 bg-coffee-100 dark:bg-coffee-900" />
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10">
               {pinnedRepos.map(repo => (
                   <RepoCard key={`pin-${repo.name}`} repo={repo} isPinned={true} tag={tags[repo.name]} />
               ))}
@@ -120,12 +120,12 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos, tags }) => {
           </div>
         )}
 
-        <div className="mb-12">
-          <div className="flex items-center gap-4 mb-10">
-            <h3 className="text-sm font-black uppercase tracking-[0.4em] text-coffee-400">Seasonal Blends</h3>
+        <div className="mb-10 md:mb-12">
+          <div className="flex items-center gap-4 mb-8 md:mb-10">
+            <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-[0.4em] text-coffee-400 whitespace-nowrap">Seasonal Blends</h3>
             <div className="h-px flex-1 bg-coffee-100 dark:bg-coffee-900" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
               <AnimatePresence mode="popLayout">
                 {currentRepos.map((repo, idx) => (
                     <motion.div
@@ -143,32 +143,32 @@ const RepoGrid: React.FC<RepoGridProps> = ({ repos, pinnedRepos, tags }) => {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-8 py-12">
+          <div className="flex justify-center items-center gap-5 sm:gap-8 py-10 md:py-12">
             <button 
               disabled={currentPage === 1}
               onClick={() => { setCurrentPage(p => p - 1); window.scrollTo({top: 0, behavior: 'smooth'}); }}
-              className="p-4 bg-coffee-100 dark:bg-coffee-900 text-coffee-800 dark:text-coffee-200 rounded-full disabled:opacity-30 hover:scale-110 transition-all shadow-md"
+              className="p-3 sm:p-4 bg-coffee-100 dark:bg-coffee-900 text-coffee-800 dark:text-coffee-200 rounded-full disabled:opacity-30 hover:scale-110 transition-all shadow-md active:scale-90"
             >
-              <ChevronLeft size={24} />
+              <ChevronLeft size={20} className="sm:w-6 sm:h-6" />
             </button>
-            <div className="text-center font-display">
-                <span className="text-2xl font-black text-coffee-900 dark:text-coffee-100">{currentPage}</span>
-                <span className="mx-2 text-coffee-300">/</span>
-                <span className="text-2xl font-black text-coffee-400">{totalPages}</span>
+            <div className="text-center font-display flex items-baseline gap-1">
+                <span className="text-xl sm:text-2xl font-black text-coffee-900 dark:text-coffee-100">{currentPage}</span>
+                <span className="text-coffee-300">/</span>
+                <span className="text-xl sm:text-2xl font-black text-coffee-400">{totalPages}</span>
             </div>
             <button 
               disabled={currentPage === totalPages}
               onClick={() => { setCurrentPage(p => p + 1); window.scrollTo({top: 0, behavior: 'smooth'}); }}
-              className="p-4 bg-coffee-100 dark:bg-coffee-900 text-coffee-800 dark:text-coffee-200 rounded-full disabled:opacity-30 hover:scale-110 transition-all shadow-md"
+              className="p-3 sm:p-4 bg-coffee-100 dark:bg-coffee-900 text-coffee-800 dark:text-coffee-200 rounded-full disabled:opacity-30 hover:scale-110 transition-all shadow-md active:scale-90"
             >
-              <ChevronRight size={24} />
+              <ChevronRight size={20} className="sm:w-6 sm:h-6" />
             </button>
           </div>
         )}
 
         {filteredOthers.length === 0 && (
-          <div className="text-center py-40">
-             <p className="text-xl font-display text-coffee-400 uppercase tracking-widest font-black">Cellar search returned no matches.</p>
+          <div className="text-center py-24 md:py-40">
+             <p className="text-lg sm:text-xl font-display text-coffee-400 uppercase tracking-widest font-black px-4">Cellar search returned no matches.</p>
           </div>
         )}
       </div>
