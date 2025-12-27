@@ -25,8 +25,6 @@ const RepoCard: React.FC<RepoCardProps> = ({ repo, isPinned = false, tag }) => {
 
   const analysis = analyzeRepo(repo);
 
-  const firstTopic = repo.topics && repo.topics.length > 0 ? repo.topics[0] : null;
-
   const toggleExpand = async () => {
     if (!expanded && !readme) {
       setLoadingReadme(true);
@@ -88,7 +86,7 @@ const RepoCard: React.FC<RepoCardProps> = ({ repo, isPinned = false, tag }) => {
 
         <div className="flex-1 flex flex-col">
           <div className="p-6 sm:p-10 flex flex-col h-full">
-            <div className="mb-6">
+            <div className="mb-4">
                 <div className="flex items-center gap-2 mb-3">
                     <GitBranch size={16} className="text-coffee-500" />
                     <h3 className="font-display font-black text-2xl sm:text-3xl text-coffee-950 dark:text-coffee-50 tracking-tight truncate group-hover:text-coffee-700 dark:group-hover:text-coffee-400 transition-colors">
@@ -102,21 +100,33 @@ const RepoCard: React.FC<RepoCardProps> = ({ repo, isPinned = false, tag }) => {
                             {repo.language}
                         </span>
                     )}
-                    {firstTopic && (
-                        <div className="px-3 py-1 bg-coffee-100/50 dark:bg-coffee-800/50 text-coffee-600 dark:text-coffee-400 border border-coffee-200 dark:border-coffee-700 rounded-md flex items-center gap-1.5">
-                            <Coffee size={10} />
-                            <span className="text-[9px] font-black uppercase tracking-widest">{firstTopic}</span>
-                        </div>
-                    )}
                 </div>
             </div>
 
-            <p className="text-coffee-700 dark:text-coffee-300 mb-8 text-sm sm:text-base leading-relaxed min-h-[3.5rem] line-clamp-2 italic font-serif">
+            <p className="text-coffee-700 dark:text-coffee-300 mb-6 text-sm sm:text-base leading-relaxed min-h-[3rem] line-clamp-2 italic font-serif">
                 {repo.description || "A smooth, undocumented blend of pure code and late-night inspiration."}
             </p>
 
+            {/* Topics / Tags Section - Styled as Pills */}
+            {repo.topics && repo.topics.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-8">
+                {repo.topics.map(topic => (
+                  <a
+                    key={topic}
+                    href={`https://github.com/topics/${topic}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 bg-white dark:bg-coffee-800/50 border border-coffee-200 dark:border-coffee-700 text-coffee-600 dark:text-coffee-400 text-[10px] font-black uppercase tracking-wider rounded-full hover:bg-coffee-100 dark:hover:bg-coffee-700 transition-colors flex items-center gap-1.5"
+                  >
+                    <Tag size={10} />
+                    {topic}
+                  </a>
+                ))}
+              </div>
+            )}
+
             {/* Optimized Metrics Row with requested concentric icon for issues */}
-            <div className="flex items-center gap-5 sm:gap-8 mb-8">
+            <div className="flex items-center gap-5 sm:gap-8 mb-8 mt-auto">
                 <div className="flex items-center gap-2 group/stat cursor-help" title="Stars">
                     <Star size={18} className="text-coffee-600 dark:text-coffee-400 transition-transform group-hover/stat:scale-125" />
                     <span className="font-black text-sm text-coffee-900 dark:text-coffee-100">{repo.stargazers_count}</span>
@@ -168,7 +178,7 @@ const RepoCard: React.FC<RepoCardProps> = ({ repo, isPinned = false, tag }) => {
               </button>
             </div>
 
-            <div className="mt-auto pt-6 border-t border-coffee-200 dark:border-coffee-800">
+            <div className="mt-0 pt-6 border-t border-coffee-200 dark:border-coffee-800">
                 <button 
                     onClick={toggleExpand}
                     className="w-full text-[10px] font-black tracking-[0.3em] text-coffee-400 hover:text-coffee-900 dark:hover:text-coffee-100 transition-colors flex items-center justify-center gap-3 uppercase"
